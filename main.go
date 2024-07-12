@@ -38,10 +38,11 @@ func StageFilterNegative(done <-chan struct{}, in <-chan int) <-chan int {
 		defer close(out)
 		for v := range in {
 			if v > 0 {
+				log.Printf("Enetered number is positive: %v\n", v)
 				select {
 				case out <- v:
 				case <-done:
-					fmt.Println("StageFilterNegative DONE")
+					log.Println("StageFilterNegative DONE")
 					return
 				}
 			}
@@ -57,10 +58,11 @@ func StageFilterThree(done <-chan struct{}, in <-chan int) <-chan int {
 		defer close(out)
 		for v := range in {
 			if v%3 == 0 && v != 0 {
+				log.Printf("Entered number is multiple of 3: %v\n", v)
 				select {
 				case out <- v:
 				case <-done:
-					fmt.Println("StageFilterThree DONE")
+					log.Println("StageFilterThree DONE")
 					return
 				}
 			}
@@ -94,7 +96,7 @@ func StageBufer(done <-chan struct{}, r *ring.Ring, in ...<-chan int) {
 	for v := range out {
 		time.Sleep(BuferTimeOut)
 		r = r.Next()
-		fmt.Printf("Data from the conveyor has been received: %v\n", v)
+		log.Printf("Data from the conveyor has been received: %v\n", v)
 	}
 	go func() {
 		wg.Wait()
@@ -120,12 +122,14 @@ func main() {
 		return output
 	}
 	// TODO:filter chars here. ONLY NUMBERS!
+	log.Printf("PIPELINE STARTED || Bufer size: %v || Bufer timeout: %v\n", BuferSize, BuferTimeOut)
 	fmt.Println("Enter data for pipeline: ")
 	for {
 		_, err := fmt.Scan(&integers)
 		if err != nil {
 			log.Fatal(err)
 		}
+		log.Printf("Entered number: %v\n", integers)
 		StageBufer(done, r, StageFilterThree(done, StageFilterNegative(done, init(integers))))
 	}
 }
