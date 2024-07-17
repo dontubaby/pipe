@@ -103,8 +103,8 @@ func StageBufer(done <-chan struct{}, r *ring.Ring, in ...<-chan int) {
 	}()
 
 }
-
 func main() {
+	fmt.Println("!!!Docker started HERE!!!")
 	r := ring.New(BuferSize)
 	done := make(chan struct{})
 	defer close(done)
