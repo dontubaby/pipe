@@ -110,14 +110,16 @@ func main() {
 	defer close(done)
 
 	var integers int
+	filterRes:=make(<-chan int)
 
 	init := func(integers ...int) <-chan int {
 		output := make(chan int)
 		go func() {
 			for _, i := range integers {
-				defer close(output)
+
 				output <- i
 			}
+			close(output)
 		}()
 		return output
 	}
@@ -130,6 +132,8 @@ func main() {
 			log.Fatal(err)
 		}
 		log.Printf("Entered number: %v\n", integers)
-		StageBufer(done, r, StageFilterThree(done, StageFilterNegative(done, init(integers))))
+		//StageBufer(done, r, StageFilterThree(done, StageFilterNegative(done, init(integers))))
+		filterRes = StageFilterThree(done, StageFilterNegative(done, init(integers)))
 	}
+	StageBufer(done, r, filterRes)
 }
